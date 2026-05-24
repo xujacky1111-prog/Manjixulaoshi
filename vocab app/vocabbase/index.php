@@ -47,8 +47,8 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
 
     <section>
         <h2>多行导入</h2>
-        <p class="muted">每行一个词：<code>word 中文释义 词性</code>，例如 <code>policy 政策；方针 n.</code>。也支持 Tab 分隔。</p>
-        <textarea id="bulkText" placeholder="policy 政策；方针 n.&#10;politician 政治家 n."></textarea>
+        <p class="muted">每行一个词：<code>word 中文释义 词性 可选例句</code>，例如 <code>policy 政策；方针 n. This policy helps every student.</code>。也支持 Tab 分隔。</p>
+        <textarea id="bulkText" placeholder="policy 政策；方针 n. This policy helps every student.&#10;politician 政治家 n. The politician visits our school."></textarea>
         <p><button onclick="bulkImport()">批量导入</button></p>
         <p id="bulkStatus" class="muted"></p>
     </section>
@@ -98,7 +98,7 @@ async function loadWords() {
             <strong>${escapeHtml(w.word)}</strong>
             <span>${escapeHtml(w.part_of_speech || '')}</span>
             <span>${escapeHtml(w.meaning_zh || '')}</span>
-            <span>${escapeHtml(w.example_en || '')}</span>
+            <span>${escapeHtml(w.example_en || '无例句')}</span>
             <button onclick="deleteWord(${w.id})">删除</button>
         </div>
     `).join('') || '<p class="muted">暂无单词</p>';
@@ -159,15 +159,28 @@ async function bulkImport() {
 
 function parseWordLine(line) {
     const tabParts = line.split(/\t+/).map(part => part.trim()).filter(Boolean);
-    if (tabParts.length >= 3) {
-        return wordPayload(tabParts[0], tabParts.slice(1, -1).join(' '), tabParts[tabParts.length - 1]);
+    if (tabParts.length >= 4) {
+        return wordPayload(tabParts[0], tabParts[1], tabParts[2], tabParts.slice(3).join(' '));
     }
-    const match = line.match(/^([A-Za-z][A-Za-z'’-]*)\s+(.+?)\s+([A-Za-z.\/]+)$/);
-    if (!match) return null;
-    return wordPayload(match[1], match[2], match[3]);
+    if (tabParts.length === 3) {
+        return wordPayload(tabParts[0], tabParts[1], tabParts[2], '');
+    }
+    const parts = line.split(/\s+/).filter(Boolean);
+    if (parts.length < 3) return null;
+    const word = parts[0];
+    const posIndex = parts.findIndex((part, index) => index > 0 && isPartOfSpeech(part));
+    if (posIndex < 2) return null;
+    const meaning = parts.slice(1, posIndex).join(' ');
+    const pos = parts[posIndex];
+    const example = parts.slice(posIndex + 1).join(' ');
+    return wordPayload(word, meaning, pos, example);
 }
 
-function wordPayload(word, meaning, pos) {
+function isPartOfSpeech(value) {
+    return /^(n|v|adj|adv|prep|pron|conj|interj|num|art)\.?($|\/)/i.test(String(value || '').trim());
+}
+
+function wordPayload(word, meaning, pos, example = '') {
     word = String(word || '').trim().toLowerCase();
     meaning = String(meaning || '').trim();
     pos = String(pos || '').trim();
@@ -176,7 +189,7 @@ function wordPayload(word, meaning, pos) {
         word,
         part_of_speech: pos,
         meaning_zh: meaning,
-        example_en: '',
+        example_en: String(example || '').trim(),
         source: 'vocabbase_bulk',
         difficulty: 1
     };
@@ -211,7 +224,7 @@ function renderWordBaseRow(item) {
             <strong>${escapeHtml(item.word)}</strong>
             <span>${escapeHtml(item.mastery_score || 0)}分</span>
             <span>${escapeHtml(item.meaning_zh || '')}</span>
-            <span>${escapeHtml(labels[item.status] || item.status)} / ${escapeHtml(today)} / 错${escapeHtml(item.total_wrong || 0)}</span>
+            <span>${escapeHtml(labels[item.status] || item.status)} / ${escapeHtml(today)} / 错${escapeHtml(item.total_wrong || 0)}${item.example_en ? ' / ' + escapeHtml(item.example_en) : ''}</span>
             <span>${escapeHtml(item.part_of_speech || '')}</span>
         </div>
     `;

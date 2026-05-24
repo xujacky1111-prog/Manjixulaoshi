@@ -65,18 +65,20 @@ return [
 Open `/vocabbase/` and paste multiple lines:
 
 ```text
-policy 政策；方针 n.
-politician 政治家 n.
-politics 政治 n.
+policy 政策；方针 n. This policy helps every student.
+politician 政治家 n. The politician visits our school.
+politics 政治 n. Politics can change people's lives.
 ```
 
 Tab-separated lines are also supported:
 
 ```text
-policy    政策；方针    n.
+policy    政策；方针    n.    This policy helps every student.
 ```
 
 Existing words are updated. New words are inserted.
+
+Example sentences are optional. For student-friendly practice, keep examples short and simple, ideally 6-12 words.
 
 ## Database Tables
 

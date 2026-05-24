@@ -20,7 +20,9 @@
         .card { border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: var(--paper); }
         .study-card { min-height: 250px; display: grid; align-content: center; gap: 14px; background: var(--warm); }
         .muted { color: var(--muted); }
+        .word-line { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .word { font-size: 52px; font-weight: 760; overflow-wrap: anywhere; }
+        .speak-button { min-height: 38px; padding: 8px 12px; text-align: center; color: var(--green); border-color: #bdd4ca; }
         .pos { color: var(--violet); font-weight: 650; }
         .example { color: #40534b; line-height: 1.5; }
         .pill { display: inline-block; border-radius: 999px; padding: 3px 9px; background: #e8eee9; color: var(--muted); font-size: 13px; }
@@ -117,7 +119,10 @@ function renderCard() {
     $('studyCard').innerHTML = `
         <div>
             <div><span class="pill">${item.is_due_review == 1 ? '到期复习' : '新词'}</span></div>
-            <div class="word">${escapeHtml(item.word)}</div>
+            <div class="word-line">
+                <div class="word">${escapeHtml(item.word)}</div>
+                <button class="speak-button" onclick="speakCurrentWord()">Read</button>
+            </div>
             ${item.part_of_speech ? `<div class="pos">${escapeHtml(item.part_of_speech)}</div>` : ''}
             ${item.example_en ? `<div class="example">${escapeHtml(item.example_en)}</div>` : ''}
         </div>
@@ -125,6 +130,7 @@ function renderCard() {
     $('options').innerHTML = (item.options || []).map((option, i) => `
         <button data-option="${escapeHtml(option)}" onclick="chooseOption(${i})">${escapeHtml(option)}</button>
     `).join('');
+    speakWord(item.word);
 }
 
 async function chooseOption(index) {
@@ -167,6 +173,25 @@ function nextWord() {
     state.index += 1;
     renderProgress();
     renderCard();
+}
+
+function speakCurrentWord() {
+    const item = state.plan[state.index];
+    if (item) speakWord(item.word);
+}
+
+function speakWord(word) {
+    try {
+        if (!word || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(String(word));
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+    } catch (error) {
+        // Some mobile browsers block automatic speech until the first user action.
+    }
 }
 
 function escapeHtml(value) {
