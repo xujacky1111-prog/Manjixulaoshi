@@ -10,6 +10,7 @@ VocabApp is a lightweight PHP/MySQL vocabulary training web app for high-school 
 - Spaced review scheduling with review intervals.
 - Per-word mastery score and difficulty tracking.
 - Admin dashboard for daily records, wrong-word statistics, and learning workflow.
+- AI learning analysis for the last 7 or 30 days, with data-first progress checks.
 - Vocab Base page for adding words, bulk import, searching, and progress review.
 - Settings page for binding a user's own AI API key.
 - Token Monitor page for tracking AI API token usage.
@@ -98,6 +99,7 @@ Example sentences are optional. For student-friendly practice, keep examples sho
 - `api/wordbase.php`: Word Base progress API.
 - `api/report.php`: daily report API.
 - `api/dashboard.php`: admin dashboard API.
+- `api/analysis.php`: weekly/monthly learning analysis, optionally using the bound AI API.
 - `api/import.php`: text import API.
 - `api/prompt.php`: prompt storage API.
 - `api/settings.php`: save and read masked AI API settings.

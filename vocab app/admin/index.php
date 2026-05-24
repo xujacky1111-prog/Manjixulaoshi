@@ -26,6 +26,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         .column { border: 1px solid #e2e8e3; border-radius: 8px; padding: 12px; background: #fafbf9; min-height: 220px; }
         .column h3 { margin-top: 0; }
         .card { border: 1px solid #e7ece8; border-radius: 7px; padding: 10px; margin-bottom: 8px; background: white; }
+        .analysis { white-space: pre-wrap; line-height: 1.65; background: #fbfcfa; border: 1px solid #e3e9e4; border-radius: 8px; padding: 14px; }
         .muted { color: #64736c; }
         @media (max-width: 900px) { .grid, .board, .row { grid-template-columns: 1fr; } }
     </style>
@@ -73,6 +74,27 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
             <div class="column"><h3>学习中</h3><div id="learningList"></div></div>
             <div class="column"><h3>基本会了</h3><div id="masteredList"></div></div>
         </div>
+    </section>
+
+    <section>
+        <h2>AI 学习分析</h2>
+        <div class="toolbar">
+            <button onclick="loadAnalysis('week')">分析最近 7 天</button>
+            <button onclick="loadAnalysis('month')">分析最近 30 天</button>
+        </div>
+        <p class="muted">系统先整理 90% 的真实数据，再让 AI 做 10% 的学习判断：Are we learning?</p>
+        <div class="grid">
+            <div class="kpi"><strong id="analysisAccuracy">0%</strong><span class="muted">本周期正确率</span></div>
+            <div class="kpi"><strong id="analysisChange">0</strong><span class="muted">较上一周期</span></div>
+            <div class="kpi"><strong id="analysisDays">0</strong><span class="muted">练习天数</span></div>
+            <div class="kpi"><strong id="analysisAttempts">0</strong><span class="muted">作答次数</span></div>
+        </div>
+        <h3>数据结论</h3>
+        <div id="localAnalysis" class="analysis muted">点击上面的按钮生成分析。</div>
+        <h3>AI 分析</h3>
+        <div id="aiAnalysis" class="analysis muted">绑定并启用 API 后，会在这里生成 AI 学习判断。</div>
+        <h3>本周期高频错词</h3>
+        <div id="analysisWrongWords"></div>
     </section>
 
     <section>
@@ -145,6 +167,42 @@ async function loadReport() {
             <span>${escapeHtml((item.answered_at || '').slice(11, 16))}</span>
         </div>
     `).join('') || '<p class="muted">这一天还没有记录</p>';
+}
+
+async function loadAnalysis(period) {
+    document.getElementById('localAnalysis').textContent = '正在整理学习数据...';
+    document.getElementById('aiAnalysis').textContent = '正在请求 AI 分析...';
+    const res = await fetch(api('analysis.php?period=' + encodeURIComponent(period)), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({use_ai: true})
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        document.getElementById('localAnalysis').textContent = data.error || '分析失败';
+        document.getElementById('aiAnalysis').textContent = '';
+        return;
+    }
+    const summary = data.summary || {};
+    document.getElementById('analysisAccuracy').textContent = `${summary.current_accuracy || 0}%`;
+    document.getElementById('analysisChange').textContent = summary.accuracy_change === null ? '暂无基线' : `${Number(summary.accuracy_change || 0) > 0 ? '+' : ''}${summary.accuracy_change || 0} pts`;
+    document.getElementById('analysisDays').textContent = `${summary.current_active_days || 0}/${summary.expected_days || 0}`;
+    document.getElementById('analysisAttempts').textContent = summary.current_attempts || 0;
+    document.getElementById('localAnalysis').textContent = data.local_analysis || '暂无数据结论。';
+    document.getElementById('aiAnalysis').textContent = data.ai_analysis || (data.ai_error ? `AI 暂不可用：${data.ai_error}` : 'AI 暂不可用，请先在 Settings 绑定并启用 API。');
+    document.getElementById('analysisWrongWords').innerHTML = renderAnalysisWrongWords(data.wrong_words || []);
+}
+
+function renderAnalysisWrongWords(rows) {
+    return rows.map(item => `
+        <div class="row">
+            <strong>${escapeHtml(item.word)}</strong>
+            <span>错${escapeHtml(item.wrong_count || 0)}</span>
+            <span>${escapeHtml(item.meaning_zh || '')}</span>
+            <span>${escapeHtml(item.part_of_speech || '')} · ${escapeHtml(item.mastery_score || 0)}分</span>
+            <span>${escapeHtml((item.last_wrong_at || '').slice(5, 16))}</span>
+        </div>
+    `).join('') || '<p class="muted">本周期没有高频错词</p>';
 }
 
 function renderCards(rows) {
