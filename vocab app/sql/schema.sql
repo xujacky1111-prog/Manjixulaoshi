@@ -62,3 +62,28 @@ CREATE TABLE IF NOT EXISTS wm_answer_attempts (
     KEY idx_attempt_word_date (word_id, study_date),
     CONSTRAINT fk_wm_answer_attempts_word FOREIGN KEY (word_id) REFERENCES wm_words(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wm_ai_settings (
+    id TINYINT UNSIGNED NOT NULL PRIMARY KEY DEFAULT 1,
+    provider VARCHAR(40) NOT NULL DEFAULT 'deepseek',
+    base_url VARCHAR(255) NOT NULL DEFAULT '',
+    model VARCHAR(120) NOT NULL DEFAULT '',
+    api_key TEXT NOT NULL,
+    enabled TINYINT(1) NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wm_ai_usage (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    usage_date DATE NOT NULL,
+    provider VARCHAR(40) NOT NULL,
+    model VARCHAR(120) NOT NULL DEFAULT '',
+    feature VARCHAR(80) NOT NULL DEFAULT 'manual',
+    prompt_tokens INT UNSIGNED NOT NULL DEFAULT 0,
+    completion_tokens INT UNSIGNED NOT NULL DEFAULT 0,
+    total_tokens INT UNSIGNED NOT NULL DEFAULT 0,
+    cost_estimate DECIMAL(12,6) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_usage_date (usage_date),
+    KEY idx_usage_provider (provider, model)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,25 @@
+{
+  "name": "vocabapp-desktop",
+  "version": "1.0.0",
+  "description": "Desktop wrapper for VocabApp",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-builder --win",
+    "pack:mac": "electron-builder --mac",
+    "pack:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.vocabapp.desktop",
+    "productName": "VocabApp",
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json"
+    ]
+  }
+}

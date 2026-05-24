@@ -11,6 +11,9 @@
         header { background: var(--green); color: white; padding: 18px 16px; }
         header .wrap, main { max-width: 760px; margin: 0 auto; }
         h1 { margin: 0; font-size: 24px; }
+        nav { margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+        nav a { color: #dce9e4; text-decoration: none; font-size: 14px; }
+        nav a:hover { text-decoration: underline; }
         main { padding: 16px; display: grid; gap: 14px; }
         button { border: 1px solid var(--line); border-radius: 7px; padding: 12px 14px; font: inherit; background: white; color: var(--ink); cursor: pointer; min-height: 46px; text-align: left; }
         button.primary { background: var(--green); color: white; border-color: var(--green); text-align: center; }
@@ -42,6 +45,12 @@
     <div class="wrap">
         <h1>今日单词</h1>
         <div id="subtitle" style="color:#dce9e4">加载中...</div>
+        <nav>
+            <a href="admin/">Admin</a>
+            <a href="vocabbase/">Vocab Base</a>
+            <a href="settings/">Settings</a>
+            <a href="monitor/">Token Monitor</a>
+        </nav>
     </div>
 </header>
 <main>

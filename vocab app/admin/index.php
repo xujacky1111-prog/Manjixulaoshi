@@ -33,7 +33,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
 <body>
 <header>
     <h1>学习记录后台</h1>
-    <p>每日答题记录、错词统计和掌握进度。词库管理已移到 <a href="../vocabbase/">Vocab Base</a>。</p>
+    <p>每日答题记录、错词统计和掌握进度。词库管理已移到 <a href="../vocabbase/">Vocab Base</a>。AI 设置在 <a href="../settings/">Settings</a>，token 用量在 <a href="../monitor/">Monitor</a>。</p>
 </header>
 <main>
     <?php if (!$configured): ?>

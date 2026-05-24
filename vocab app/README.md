@@ -11,6 +11,8 @@ VocabApp is a lightweight PHP/MySQL vocabulary training web app for high-school 
 - Per-word mastery score and difficulty tracking.
 - Admin dashboard for daily records, wrong-word statistics, and learning workflow.
 - Vocab Base page for adding words, bulk import, searching, and progress review.
+- Settings page for binding a user's own AI API key.
+- Token Monitor page for tracking AI API token usage.
 - All dates and daily records use Beijing time (`Asia/Shanghai`, MySQL session `+08:00`).
 
 ## Pages
@@ -18,6 +20,8 @@ VocabApp is a lightweight PHP/MySQL vocabulary training web app for high-school 
 - `/index.php` or `/`: student practice page.
 - `/admin/`: learning records, daily statistics, and workflow dashboard.
 - `/vocabbase/`: word management, bulk import, and Word Base progress.
+- `/settings/`: bind DeepSeek, Kimi, Doubao, or another OpenAI-compatible API.
+- `/monitor/`: review AI token usage by day and recent call.
 
 ## Requirements
 
@@ -96,6 +100,18 @@ Example sentences are optional. For student-friendly practice, keep examples sho
 - `api/dashboard.php`: admin dashboard API.
 - `api/import.php`: text import API.
 - `api/prompt.php`: prompt storage API.
+- `api/settings.php`: save and read masked AI API settings.
+- `api/ai.php`: OpenAI-compatible AI proxy that records token usage.
+- `api/usage.php`: token usage summary and recent records.
+
+## App Wrappers
+
+The `apps/` folder contains starter wrappers for people who want an installable version:
+
+- `apps/android-webview/`: Android Studio WebView app that opens the hosted VocabApp URL.
+- `apps/desktop-electron/`: Electron desktop app that opens the hosted VocabApp URL.
+
+These wrappers are intentionally thin. They still use the web app and server database. A fully offline Android or desktop edition would need a separate local database and sync design.
 
 ## Security Note
 

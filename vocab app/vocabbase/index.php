@@ -26,7 +26,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
 <body>
 <header>
     <h1>Vocab Base</h1>
-    <p>新增单词、维护词库和查看词库进度。学习统计在 <a href="../admin/">Admin</a>。</p>
+    <p>新增单词、维护词库和查看词库进度。学习统计在 <a href="../admin/">Admin</a>，AI 设置在 <a href="../settings/">Settings</a>。</p>
 </header>
 <main>
     <?php if (!$configured): ?>
