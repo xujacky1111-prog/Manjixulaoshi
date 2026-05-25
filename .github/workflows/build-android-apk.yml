@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - "vocab app/index.php"
+      - "vocab app/admin/**"
+      - "vocab app/vocabbase/**"
+      - "vocab app/settings/**"
+      - "vocab app/monitor/**"
       - "vocab app/apps/android-webview/**"
       - ".github/workflows/build-android-apk.yml"
 
