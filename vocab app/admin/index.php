@@ -11,6 +11,16 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         body { margin: 0; padding-bottom: 84px; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: #f5f6f4; color: #1c2622; }
         header { padding: 20px; background: #2f6f5e; color: white; }
         header a { color: white; }
+        .topbar { max-width: 1180px; margin: 0 auto; display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+        .topbar h1 { margin: 0; }
+        .topbar p { margin-bottom: 0; color: #dce9e4; }
+        .settings-menu { position: relative; }
+        .settings-menu summary { list-style: none; border: 1px solid rgba(255,255,255,.45); border-radius: 8px; padding: 9px 12px; cursor: pointer; font-weight: 650; }
+        .settings-menu summary::-webkit-details-marker { display: none; }
+        .settings-menu[open] summary { background: rgba(255,255,255,.12); }
+        .settings-menu .menu { position: absolute; right: 0; top: 44px; min-width: 180px; display: grid; gap: 4px; padding: 8px; border-radius: 8px; background: white; box-shadow: 0 14px 30px rgba(28,38,34,.18); border: 1px solid #dfe5df; }
+        .settings-menu .menu a { color: #1c2622; text-decoration: none; padding: 10px; border-radius: 7px; }
+        .settings-menu .menu a:hover { background: #f1f5f2; }
         main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; gap: 18px; }
         section { background: white; border: 1px solid #dfe5df; border-radius: 8px; padding: 16px; }
         input, button { font: inherit; }
@@ -18,6 +28,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         button { border: 0; border-radius: 6px; padding: 10px 14px; background: #2f6f5e; color: white; cursor: pointer; }
         .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
         .toolbar button { background: white; color: #1c2622; border: 1px solid #dfe5df; }
+        .tabs button.active { background: #e5f2ed; color: #2f6f5e; border-color: #b7d3c8; }
         .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
         .kpi { border: 1px solid #e3e9e4; border-radius: 8px; padding: 14px; background: #fbfcfa; }
         .kpi strong { display: block; font-size: 24px; }
@@ -33,13 +44,25 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         .bottom-tabs a { display: grid; gap: 2px; justify-items: center; padding: 8px 6px; border-radius: 8px; color: #64736c; text-decoration: none; font-size: 12px; font-weight: 650; }
         .bottom-tabs a strong { font-size: 18px; line-height: 1; }
         .bottom-tabs a.active { background: #e5f2ed; color: #2f6f5e; }
-        @media (max-width: 900px) { .grid, .board, .row { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { .topbar { display: grid; } .settings-menu .menu { right: auto; left: 0; } .grid, .board, .row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <header>
-    <h1>学习记录后台</h1>
-    <p>每日答题记录、错词统计和掌握进度。词库管理已移到 <a href="../vocabbase/">Vocab Base</a>。AI 设置在 <a href="../settings/">Settings</a>，token 用量在 <a href="../monitor/">Monitor</a>。</p>
+    <div class="topbar">
+        <div>
+            <h1>学习记录后台</h1>
+            <p>每日答题记录、错词统计和掌握进度。</p>
+        </div>
+        <details class="settings-menu">
+            <summary>设置</summary>
+            <div class="menu">
+                <a href="../settings/">API 设置</a>
+                <a href="../monitor/">Token Monitor</a>
+                <a href="../vocabbase/">Vocab Base</a>
+            </div>
+        </details>
+    </div>
 </header>
 <main>
     <?php if (!$configured): ?>
@@ -51,8 +74,6 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
             <label>日期<input id="reportDate" type="date"></label>
             <div style="align-self:end"><button onclick="loadAll()">刷新统计</button></div>
         </div>
-        <p class="muted">历史日期</p>
-        <div id="dateHistory" class="toolbar"></div>
     </section>
 
     <section>
@@ -73,12 +94,13 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
             <div class="kpi"><strong id="learningCount">0</strong><span class="muted">学习中</span></div>
             <div class="kpi"><strong id="masteredCount">0</strong><span class="muted">基本会了</span></div>
         </div>
-        <div class="board" style="margin-top:14px">
-            <div class="column"><h3>未测试</h3><div id="untestedList"></div></div>
-            <div class="column"><h3>需要加强</h3><div id="workList"></div></div>
-            <div class="column"><h3>学习中</h3><div id="learningList"></div></div>
-            <div class="column"><h3>基本会了</h3><div id="masteredList"></div></div>
+        <div class="toolbar tabs" style="margin-top:14px">
+            <button id="workflowTabUntested" class="active" onclick="setWorkflowStatus('untested')">未测试</button>
+            <button id="workflowTabWork" onclick="setWorkflowStatus('work')">需要加强</button>
+            <button id="workflowTabLearning" onclick="setWorkflowStatus('learning')">学习中</button>
+            <button id="workflowTabMastered" onclick="setWorkflowStatus('mastered')">基本会了</button>
         </div>
+        <div id="workflowList" style="margin-top:12px"></div>
     </section>
 
     <section>
@@ -122,6 +144,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
 </div>
 <script>
 const api = path => '../api/' + path;
+let workflowStatus = 'untested';
 
 async function loadAll() {
     await Promise.all([loadDashboard(), loadReport(), loadWorkflow()]);
@@ -142,24 +165,14 @@ async function loadDashboard() {
     document.getElementById('learningCount').textContent = summary.learning_words || 0;
     document.getElementById('masteredCount').textContent = summary.mastered_words || 0;
     document.getElementById('wrongLeaderboard').innerHTML = renderRows(data.wrong_leaderboard || [], '暂无错词');
-    document.getElementById('dateHistory').innerHTML = (data.trend || []).map(item => `
-        <button onclick="setDate('${escapeHtml(item.study_date)}')">${escapeHtml(item.study_date)} · ${escapeHtml(item.words_seen || 0)}词</button>
-    `).join('') || '<span class="muted">暂无历史记录</span>';
 }
 
 async function loadWorkflow() {
     const date = getDate();
-    const statuses = [
-        ['untested', 'untestedList'],
-        ['work', 'workList'],
-        ['learning', 'learningList'],
-        ['mastered', 'masteredList']
-    ];
-    await Promise.all(statuses.map(async ([status, target]) => {
-        const res = await fetch(api(`wordbase.php?date=${encodeURIComponent(date)}&status=${status}&limit=20`));
-        const data = await res.json();
-        document.getElementById(target).innerHTML = renderCards(data.words || []);
-    }));
+    const res = await fetch(api(`wordbase.php?date=${encodeURIComponent(date)}&status=${workflowStatus}&limit=50`));
+    const data = await res.json();
+    document.getElementById('workflowList').innerHTML = renderCards(data.words || []);
+    updateWorkflowTabs();
 }
 
 async function loadReport() {
@@ -225,6 +238,24 @@ function renderCards(rows) {
             <div class="muted">${escapeHtml(item.part_of_speech || '')} · ${escapeHtml(item.mastery_score || 0)}分 · 错${escapeHtml(item.total_wrong || item.wrong_streak || 0)}</div>
         </div>
     `).join('') || '<p class="muted">暂无</p>';
+}
+
+function setWorkflowStatus(status) {
+    workflowStatus = status;
+    updateWorkflowTabs();
+    loadWorkflow();
+}
+
+function updateWorkflowTabs() {
+    const map = {
+        untested: 'workflowTabUntested',
+        work: 'workflowTabWork',
+        learning: 'workflowTabLearning',
+        mastered: 'workflowTabMastered'
+    };
+    Object.entries(map).forEach(([status, id]) => {
+        document.getElementById(id).classList.toggle('active', workflowStatus === status);
+    });
 }
 
 function renderRows(rows, emptyText) {
