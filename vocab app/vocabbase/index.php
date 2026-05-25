@@ -8,7 +8,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Vocab Base</title>
     <style>
-        body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: #f5f6f4; color: #1c2622; }
+        body { margin: 0; padding-bottom: 84px; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: #f5f6f4; color: #1c2622; }
         header { padding: 20px; background: #2f6f5e; color: white; }
         header a { color: white; }
         main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; gap: 18px; }
@@ -20,6 +20,11 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .row { display: grid; grid-template-columns: 1fr 80px 2fr 1.5fr 80px; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid #eef1ed; }
         .muted { color: #64736c; }
+        .bottom-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: rgba(255,255,255,.96); border-top: 1px solid #dfe5df; box-shadow: 0 -8px 24px rgba(28,38,34,.08); }
+        .bottom-tabs .inner { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); }
+        .bottom-tabs a { display: grid; gap: 2px; justify-items: center; padding: 8px 6px; border-radius: 8px; color: #64736c; text-decoration: none; font-size: 12px; font-weight: 650; }
+        .bottom-tabs a strong { font-size: 18px; line-height: 1; }
+        .bottom-tabs a.active { background: #e5f2ed; color: #2f6f5e; }
         @media (max-width: 760px) { .grid, .row { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -86,6 +91,13 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         <p id="promptStatus" class="muted"></p>
     </section>
 </main>
+<div class="bottom-tabs" aria-label="主导航">
+    <div class="inner">
+        <a href="../"><strong>W</strong><span>Word</span></a>
+        <a class="active" href="./"><strong>V</strong><span>Vocab Base</span></a>
+        <a href="../admin/"><strong>A</strong><span>Admin</span></a>
+    </div>
+</div>
 <script>
 const api = path => '../api/' + path;
 

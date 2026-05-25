@@ -7,7 +7,7 @@
     <style>
         :root { --green:#2f6f5e; --ink:#17211d; --muted:#62726b; --line:#dfe6e1; --paper:#fff; --warm:#f6f1e8; --violet:#68599a; --good:#2f6f5e; --bad:#bf4f35; }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f4f6f2; color: var(--ink); }
+        body { margin: 0; padding-bottom: 84px; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f4f6f2; color: var(--ink); }
         header { background: var(--green); color: white; padding: 18px 16px; }
         header .wrap, main { max-width: 760px; margin: 0 auto; }
         h1 { margin: 0; font-size: 24px; }
@@ -37,6 +37,11 @@
         .feedback { min-height: 24px; font-weight: 650; }
         .feedback.good { color: var(--good); }
         .feedback.bad { color: var(--bad); }
+        .bottom-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: rgba(255,255,255,.96); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(23,33,29,.08); }
+        .bottom-tabs .inner { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); }
+        .bottom-tabs a { display: grid; gap: 2px; justify-items: center; padding: 8px 6px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 12px; font-weight: 650; }
+        .bottom-tabs a strong { font-size: 18px; line-height: 1; }
+        .bottom-tabs a.active { background: #e5f2ed; color: var(--green); }
         @media (max-width: 560px) { .word { font-size: 40px; } }
     </style>
 </head>
@@ -68,6 +73,13 @@
     <div id="feedback" class="feedback"></div>
     <button id="nextButton" class="primary" onclick="nextWord()" style="display:none">下一题</button>
 </main>
+<div class="bottom-tabs" aria-label="主导航">
+    <div class="inner">
+        <a class="active" href="./"><strong>W</strong><span>Word</span></a>
+        <a href="vocabbase/"><strong>V</strong><span>Vocab Base</span></a>
+        <a href="admin/"><strong>A</strong><span>Admin</span></a>
+    </div>
+</div>
 <script>
 const state = { plan: [], index: 0, progress: null, locked: false };
 const $ = id => document.getElementById(id);

@@ -8,7 +8,7 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>学习记录后台</title>
     <style>
-        body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: #f5f6f4; color: #1c2622; }
+        body { margin: 0; padding-bottom: 84px; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: #f5f6f4; color: #1c2622; }
         header { padding: 20px; background: #2f6f5e; color: white; }
         header a { color: white; }
         main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; gap: 18px; }
@@ -28,6 +28,11 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         .card { border: 1px solid #e7ece8; border-radius: 7px; padding: 10px; margin-bottom: 8px; background: white; }
         .analysis { white-space: pre-wrap; line-height: 1.65; background: #fbfcfa; border: 1px solid #e3e9e4; border-radius: 8px; padding: 14px; }
         .muted { color: #64736c; }
+        .bottom-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: rgba(255,255,255,.96); border-top: 1px solid #dfe5df; box-shadow: 0 -8px 24px rgba(28,38,34,.08); }
+        .bottom-tabs .inner { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); }
+        .bottom-tabs a { display: grid; gap: 2px; justify-items: center; padding: 8px 6px; border-radius: 8px; color: #64736c; text-decoration: none; font-size: 12px; font-weight: 650; }
+        .bottom-tabs a strong { font-size: 18px; line-height: 1; }
+        .bottom-tabs a.active { background: #e5f2ed; color: #2f6f5e; }
         @media (max-width: 900px) { .grid, .board, .row { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -108,6 +113,13 @@ $configured = file_exists(__DIR__ . '/../config/config.php');
         <div id="wrongLeaderboard"></div>
     </section>
 </main>
+<div class="bottom-tabs" aria-label="主导航">
+    <div class="inner">
+        <a href="../"><strong>W</strong><span>Word</span></a>
+        <a href="../vocabbase/"><strong>V</strong><span>Vocab Base</span></a>
+        <a class="active" href="./"><strong>A</strong><span>Admin</span></a>
+    </div>
+</div>
 <script>
 const api = path => '../api/' + path;
 
