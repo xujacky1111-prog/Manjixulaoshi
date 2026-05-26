@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 $date = trim((string)($_GET['date'] ?? date('Y-m-d')));
+$bankCode = clean_bank_code((string)($_GET['bank_code'] ?? 'high_school'));
 $q = trim((string)($_GET['q'] ?? ''));
 $status = trim((string)($_GET['status'] ?? 'all'));
 $limit = max(20, min(500, (int)($_GET['limit'] ?? 100)));
@@ -15,8 +16,8 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     respond(['error' => 'Invalid date'], 422);
 }
 
-$where = [];
-$params = ['date' => $date];
+$where = ['w.bank_code = :bank_code'];
+$params = ['date' => $date, 'bank_code' => $bankCode];
 if ($q !== '') {
     $where[] = '(w.word LIKE :q OR w.meaning_zh LIKE :q)';
     $params['q'] = '%' . $q . '%';
@@ -41,6 +42,7 @@ $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 $sql = "
     SELECT
         w.id,
+        w.bank_code,
         w.word,
         w.part_of_speech,
         w.meaning_zh,
@@ -113,8 +115,9 @@ $summaryStmt = db()->prepare("
         FROM wm_answer_attempts
         GROUP BY word_id
     ) t ON t.word_id = w.id
+    WHERE w.bank_code = ?
 ");
-$summaryStmt->execute([$date]);
+$summaryStmt->execute([$date, $bankCode]);
 
 respond([
     'date' => $date,

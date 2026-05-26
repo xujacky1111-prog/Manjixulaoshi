@@ -66,6 +66,7 @@ function require_admin(): void
 function clean_word_payload(array $data): array
 {
     return [
+        'bank_code' => clean_bank_code((string)($data['bank_code'] ?? $data['bank'] ?? 'high_school')),
         'word' => strtolower(trim((string)($data['word'] ?? ''))),
         'part_of_speech' => trim((string)($data['part_of_speech'] ?? $data['pos'] ?? '')),
         'meaning_zh' => trim((string)($data['meaning_zh'] ?? $data['meaning'] ?? '')),
@@ -73,4 +74,24 @@ function clean_word_payload(array $data): array
         'source' => trim((string)($data['source'] ?? 'admin')),
         'difficulty' => max(1, min(5, (int)($data['difficulty'] ?? 1)))
     ];
+}
+
+function clean_bank_code(string $code): string
+{
+    $code = strtolower(trim($code));
+    return preg_match('/^[a-z0-9_-]{1,40}$/', $code) ? $code : 'high_school';
+}
+
+function ensure_word_bank(PDO $pdo, string $code, string $title = ''): void
+{
+    $stmt = $pdo->prepare(
+        'INSERT INTO wm_word_banks (code, title, description, sort_order)
+         VALUES (:code, :title, :description, 100)
+         ON DUPLICATE KEY UPDATE title=VALUES(title)'
+    );
+    $stmt->execute([
+        'code' => clean_bank_code($code),
+        'title' => $title !== '' ? $title : strtoupper(str_replace('_', ' ', $code)),
+        'description' => ''
+    ]);
 }

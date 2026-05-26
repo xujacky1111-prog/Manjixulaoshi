@@ -106,14 +106,14 @@ Example sentences are optional. For student-friendly practice, keep examples sho
 - `api/ai.php`: OpenAI-compatible AI proxy that records token usage.
 - `api/usage.php`: token usage summary and recent records.
 
-## App Wrappers
+## Apps
 
-The `apps/` folder contains starter wrappers for people who want an installable version:
+The `apps/` folder contains installable app projects:
 
-- `apps/android-webview/`: Android Studio WebView app that opens the hosted VocabApp URL.
+- `apps/android-webview/`: Native Android WordApp. It downloads word banks from `/wordapp/api`, then stores words and study progress locally with Room/SQLite.
 - `apps/desktop-electron/`: Electron desktop app that opens the hosted VocabApp URL.
 
-These wrappers are intentionally thin. They still use the web app and server database. A fully offline Android or desktop edition would need a separate local database and sync design.
+The Android app does not upload learning progress. Each phone keeps its own local study data.
 
 ## Security Note
 

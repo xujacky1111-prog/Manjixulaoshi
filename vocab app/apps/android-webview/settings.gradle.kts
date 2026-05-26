@@ -1,4 +1,4 @@
-pluginManagement {
+﻿pluginManagement {
     repositories {
         google()
         mavenCentral()
@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'VocabApp'
-include ':app'
+rootProject.name = "WordApp"
+include(":app")

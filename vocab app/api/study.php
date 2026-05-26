@@ -6,6 +6,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $pdo = db();
 
 if ($method === 'GET') {
+    $bankCode = clean_bank_code((string)($_GET['bank_code'] ?? 'high_school'));
     $dailyTarget = 80;
     $newLimit = 80;
     $reviewLimit = 80;
@@ -37,7 +38,7 @@ if ($method === 'GET') {
         'SELECT w.*, r.next_review_date, r.interval_days, r.correct_streak, r.wrong_streak, r.is_new, 1 AS is_due_review
          FROM wm_words w
          JOIN wm_reviews r ON r.word_id = w.id
-         WHERE r.next_review_date <= :today AND r.is_new = 0
+         WHERE w.bank_code = :bank_code AND r.next_review_date <= :today AND r.is_new = 0
            AND NOT EXISTS (
                SELECT 1 FROM wm_daily_answers a
                WHERE a.word_id = w.id AND a.study_date = :today_answered AND a.remembered = 1
@@ -51,7 +52,7 @@ if ($method === 'GET') {
            RAND()
          LIMIT ' . $remainingReviews
     );
-    $reviewStmt->execute(['today' => $today, 'today_answered' => $today, 'today_wrong' => $today]);
+    $reviewStmt->execute(['bank_code' => $bankCode, 'today' => $today, 'today_answered' => $today, 'today_wrong' => $today]);
     $dueReviews = $reviewStmt->fetchAll();
     $remainingNew = min(max(0, $newLimit - $newDone), max(0, $remainingTotal - count($dueReviews)));
 
@@ -59,7 +60,8 @@ if ($method === 'GET') {
     $newSql = 'SELECT w.*, r.next_review_date, r.interval_days, r.correct_streak, r.wrong_streak, COALESCE(r.is_new, 1) AS is_new, 0 AS is_due_review
                FROM wm_words w
                LEFT JOIN wm_reviews r ON r.word_id = w.id
-               WHERE (r.id IS NULL OR r.is_new = 1)
+               WHERE w.bank_code = ?
+                 AND (r.id IS NULL OR r.is_new = 1)
                  AND NOT EXISTS (
                      SELECT 1 FROM wm_daily_answers a
                      WHERE a.word_id = w.id AND a.study_date = ? AND a.remembered = 1
@@ -69,7 +71,7 @@ if ($method === 'GET') {
     }
     $newSql .= ' ORDER BY RAND() LIMIT ' . $remainingNew;
     $newStmt = $pdo->prepare($newSql);
-    $newStmt->execute(array_merge([$today], $dueIds));
+    $newStmt->execute(array_merge([$bankCode, $today], $dueIds));
     $newWords = $newStmt->fetchAll();
 
     $all = array_merge($dueReviews, $newWords);
@@ -270,7 +272,8 @@ function option_pool(PDO $pdo, array $word): array
     $stmt = $pdo->prepare(
         'SELECT meaning_zh
          FROM wm_words
-         WHERE id <> :id
+         WHERE bank_code = :bank_code
+           AND id <> :id
            AND part_of_speech = :pos
            AND difficulty BETWEEN :low AND :high
          ORDER BY RAND()
@@ -279,6 +282,7 @@ function option_pool(PDO $pdo, array $word): array
     $difficulty = (int)($word['difficulty'] ?? 1);
     $stmt->execute([
         'id' => (int)$word['id'],
+        'bank_code' => (string)($word['bank_code'] ?? 'high_school'),
         'pos' => (string)($word['part_of_speech'] ?? ''),
         'low' => max(1, $difficulty - 1),
         'high' => min(5, $difficulty + 1)
@@ -289,12 +293,14 @@ function option_pool(PDO $pdo, array $word): array
         $fallback = $pdo->prepare(
             'SELECT meaning_zh
              FROM wm_words
-             WHERE id <> :id
+             WHERE bank_code = :bank_code
+               AND id <> :id
              ORDER BY ABS(difficulty - :difficulty), RAND()
              LIMIT 50'
         );
         $fallback->execute([
             'id' => (int)$word['id'],
+            'bank_code' => (string)($word['bank_code'] ?? 'high_school'),
             'difficulty' => $difficulty
         ]);
         $pool = array_merge($pool, $fallback->fetchAll(PDO::FETCH_COLUMN));

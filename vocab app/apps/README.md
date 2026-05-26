@@ -1,8 +1,8 @@
-# VocabApp App Wrappers
+# VocabApp Apps
 
-This folder contains installable wrappers for the hosted VocabApp website.
+This folder contains installable app projects related to the hosted VocabApp website.
 
-- `android-webview/`: Android Studio project. It opens `https://layer-city.com/word/` in a WebView.
-- `desktop-electron/`: Electron desktop project. It opens the same hosted app in a desktop window.
+- `android-webview/`: Native Android WordApp. It downloads word banks from `/wordapp/api`, then stores words and study progress locally with Room/SQLite.
+- `desktop-electron/`: Electron desktop wrapper. It still opens the hosted web app in a desktop window.
 
-These wrappers keep deployment simple: the website, database, AI API settings, and token monitor still live on the server. If you need a version that works without any server, build a separate offline edition with local SQLite storage and an import/export or sync workflow.
+The Android app does not use the hosted website as its main UI anymore.

@@ -1,4 +1,3 @@
 <resources>
-    <string name="app_name">VocabApp</string>
-    <string name="app_url">https://layer-city.com/word/</string>
+    <string name="app_name">WordApp</string>
 </resources>

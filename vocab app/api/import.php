@@ -7,17 +7,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $body = json_body();
+$bankCode = clean_bank_code((string)($body['bank_code'] ?? 'high_school'));
 $text = (string)($body['text'] ?? '');
-$rows = parse_import_text($text);
+$rows = parse_import_text($text, $bankCode);
 
 if ($rows === []) {
     respond(['imported' => 0, 'skipped' => 0, 'message' => '没有识别到单词。']);
 }
 
 $pdo = db();
+ensure_word_bank($pdo, $bankCode);
 $stmt = $pdo->prepare(
-    'INSERT INTO wm_words (word, part_of_speech, meaning_zh, example_en, source, difficulty)
-     VALUES (:word, :part_of_speech, :meaning_zh, :example_en, :source, :difficulty)
+    'INSERT INTO wm_words (bank_code, word, part_of_speech, meaning_zh, example_en, source, difficulty)
+     VALUES (:bank_code, :word, :part_of_speech, :meaning_zh, :example_en, :source, :difficulty)
      ON DUPLICATE KEY UPDATE part_of_speech=VALUES(part_of_speech), meaning_zh=VALUES(meaning_zh), example_en=VALUES(example_en), source=VALUES(source), difficulty=VALUES(difficulty)'
 );
 
@@ -29,7 +31,7 @@ foreach ($rows as $row) {
 
 respond(['imported' => $imported, 'skipped' => max(0, count(preg_split('/\R/', $text)) - $imported)]);
 
-function parse_import_text(string $text): array
+function parse_import_text(string $text, string $bankCode): array
 {
     $rows = [];
     foreach (preg_split('/\R/', $text) ?: [] as $line) {
@@ -68,6 +70,7 @@ function parse_import_text(string $text): array
 
         $rows[$word] = [
             'word' => $word,
+            'bank_code' => $bankCode,
             'part_of_speech' => $pos,
             'meaning_zh' => $meaning,
             'example_en' => $example,
