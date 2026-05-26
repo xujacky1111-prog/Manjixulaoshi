@@ -21,9 +21,9 @@ python -m http.server 8001 --bind 127.0.0.1
 http://127.0.0.1:8001/pattern-drill.html
 ```
 
-## 部署目录
+## 目录说明
 
-Hostinger 线上部署文件位于：
+这个目录就是项目归档和部署目录。GitHub 路径：
 
 ```text
 layer-city/vocalpractice/
