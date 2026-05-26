@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>句型口语练习</title>
+    <link rel="stylesheet" href="pattern-drill.css?v=20260526-cn" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="onboarding-view" id="onboardingView" aria-label="学习画像设置">
+        <header class="onboarding-top">
+          <button class="onboarding-back" id="onboardingBackBtn" type="button" aria-label="返回上一题">‹</button>
+          <div class="onboarding-progress" aria-hidden="true">
+            <div id="onboardingProgressFill"></div>
+          </div>
+        </header>
+
+        <section class="onboarding-body">
+          <p class="eyebrow" id="onboardingStepLabel">第 1 步</p>
+          <h1 id="onboardingQuestion">你的英语口语水平如何？</h1>
+          <p id="onboardingHint">帮助我们推荐适合你的句型练习内容。</p>
+          <div class="onboarding-options" id="onboardingOptions"></div>
+        </section>
+
+        <footer class="onboarding-footer">
+          <button class="onboarding-continue" id="onboardingContinueBtn" type="button" disabled>继续</button>
+        </footer>
+      </section>
+
+      <section class="home-view" id="homeView" aria-label="句型练习首页">
+        <header class="app-nav">
+          <div>
+            <p class="eyebrow">口语教练</p>
+            <h1>选择练习</h1>
+          </div>
+          <button class="avatar-badge" id="openSettingsBtn" type="button" aria-label="打开 API 设置">设置</button>
+        </header>
+
+        <section class="featured-card" aria-label="推荐练习">
+          <div>
+            <span>自定义句型练习</span>
+            <h2>用固定句型练英语口语</h2>
+            <p>先听示范，再替换练习、录音，并获得即时反馈。</p>
+          </div>
+          <button class="start-button" id="startTrainingBtn" type="button">开始</button>
+        </section>
+
+        <section class="learning-plan" id="learningPlanCard" aria-label="学习计划摘要">
+          <div>
+            <span>你的计划</span>
+            <p id="learningPlanText">完成开始问卷后，这里会显示你的学习计划。</p>
+            <small id="contentStatusText">正在使用内置入门内容。</small>
+          </div>
+          <div class="plan-actions">
+            <button class="text-button" id="updateContentBtn" type="button">更新内容</button>
+            <button class="text-button" id="editPlanBtn" type="button">修改画像</button>
+          </div>
+        </section>
+
+        <label class="plan-picker" id="planPickerWrap">
+          <span>内容包</span>
+          <select id="planSelect" aria-label="选择学习计划"></select>
+        </label>
+
+        <nav class="category-tabs" id="categoryTabs" aria-label="练习分类"></nav>
+
+        <section class="lesson-grid" id="lessonGrid" aria-label="练习场景"></section>
+      </section>
+
+      <section class="settings-view is-hidden" id="settingsView" aria-label="API 设置">
+        <header class="training-nav">
+          <button class="round-button" id="backFromSettingsBtn" type="button" aria-label="返回主页">‹</button>
+          <div>
+            <p class="eyebrow">绑定自己的 Key</p>
+            <h1>API 设置</h1>
+          </div>
+          <span class="settings-status" id="apiStatusPill">未绑定</span>
+        </header>
+
+        <section class="settings-card">
+          <h2>绑定 AI 服务商</h2>
+          <p>
+            这里保存用户自己的 API 配置。Key 只存在当前设备浏览器里，不上传到我们的服务器。
+          </p>
+
+          <label class="field">
+            <span>服务商</span>
+            <select id="apiProviderSelect" aria-label="选择 API 服务商"></select>
+          </label>
+
+          <label class="field">
+            <span>API 密钥</span>
+            <input id="apiKeyInput" type="password" autocomplete="off" placeholder="sk-..." />
+          </label>
+
+          <label class="field">
+            <span>模型</span>
+            <input id="apiModelInput" type="text" placeholder="例如 deepseek-chat" />
+          </label>
+
+          <label class="field">
+            <span>接口地址</span>
+            <input id="apiBaseUrlInput" type="url" placeholder="https://api.example.com/v1" />
+          </label>
+
+          <div class="settings-actions">
+            <button class="primary-button" id="saveApiSettingsBtn" type="button">保存 API</button>
+            <button class="secondary-button" id="clearApiSettingsBtn" type="button">清除</button>
+          </div>
+        </section>
+
+        <section class="api-note">
+          <strong>注意</strong>
+          <p>
+            浏览器静态网页直接请求某些模型 API 时可能被 CORS 拦截。打包成 Android/桌面 App
+            或增加一个本地代理后，体验会更稳定。
+          </p>
+        </section>
+      </section>
+
+      <section class="trainer is-hidden" id="trainingView" aria-label="句型训练">
+        <header class="training-nav">
+          <button class="round-button" id="backHomeBtn" type="button" aria-label="返回主页">‹</button>
+          <div>
+            <p class="eyebrow" id="lessonLevel">初学者</p>
+            <h1 id="trainingTitle">训练</h1>
+          </div>
+          <select id="scenarioSelect" aria-label="选择练习场景"></select>
+        </header>
+
+        <section class="goal-card" aria-label="当前目标">
+          <span id="lessonEmoji" aria-hidden="true">💬</span>
+          <div>
+            <p>本课目标</p>
+            <strong id="lessonGoal">自动说出一个完整句子。</strong>
+          </div>
+        </section>
+
+        <section class="sentence-stack">
+          <article class="sentence-card example-card">
+            <div class="card-heading">
+              <span>例句</span>
+              <button class="text-button" id="playExampleBtn" type="button">听示范</button>
+            </div>
+            <p id="exampleSentence">I can swim.</p>
+            <small id="exampleTranslation">我会游泳。</small>
+          </article>
+
+          <article class="sentence-card practice-card">
+            <div class="card-heading">
+              <span>轮到你</span>
+              <button class="text-button" id="playTargetBtn" type="button">听答案</button>
+            </div>
+            <p id="practiceSentence">I can <span class="blank">________</span>.</p>
+            <small id="practicePrompt">提示：骑自行车</small>
+          </article>
+        </section>
+
+        <section class="record-zone" aria-label="录音和识别">
+          <button class="record-orb" id="recordToggleBtn" type="button" aria-label="开始录音">
+            <span class="orb-ring"></span>
+            <span class="orb-wave" aria-hidden="true"></span>
+          </button>
+          <p class="status-line" id="statusLine">按下圆形按钮，说出上面的完整句子。</p>
+          <audio id="recordingPlayback" controls hidden></audio>
+        </section>
+
+        <section class="result-grid" aria-label="识别和反馈">
+          <article class="result-card">
+            <span>我听到</span>
+            <p id="transcriptText">等待录音...</p>
+          </article>
+          <article class="result-card">
+            <span>中文意思</span>
+            <p id="translationText">完成一次练习后显示。</p>
+          </article>
+          <article class="result-card feedback-card">
+            <span>可以改进</span>
+            <ul id="feedbackList">
+              <li>先听例句，再按按钮开始说。</li>
+            </ul>
+            <div class="phrase-chips" id="phraseChips" aria-label="练习词组"></div>
+          </article>
+        </section>
+
+        <footer class="controls">
+          <button class="secondary-button" id="prevBtn" type="button">上一句</button>
+          <div class="progress-wrap" aria-hidden="true">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <button class="primary-button" id="nextBtn" type="button">下一句</button>
+        </footer>
+      </section>
+    </main>
+
+    <script src="pattern-drill.js?v=20260526-cn"></script>
+  </body>
+</html>

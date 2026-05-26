@@ -1,0 +1,6 @@
+layer-city/vocalpractice/includes/config.php
+layer-city/vocalpractice/data/*.sqlite
+layer-city/vocalpractice/data/*.sqlite-*
+*.log
+.DS_Store
+Thumbs.db
