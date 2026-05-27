@@ -170,6 +170,11 @@
           <article class="result-card">
             <span>我听到</span>
             <p id="transcriptText">等待录音...</p>
+            <label class="manual-transcript">
+              <span>识别不准？可以手动修改</span>
+              <textarea id="manualTranscriptInput" rows="2" placeholder="例如：I can ride a bike."></textarea>
+            </label>
+            <button class="text-button transcript-apply" id="applyTranscriptBtn" type="button">用这段文字生成反馈</button>
           </article>
           <article class="result-card">
             <span>中文意思</span>
@@ -194,6 +199,6 @@
       </section>
     </main>
 
-    <script src="pattern-drill.js?v=20260526-cn"></script>
+    <script src="pattern-drill.js?v=20260527-recognition"></script>
   </body>
 </html>

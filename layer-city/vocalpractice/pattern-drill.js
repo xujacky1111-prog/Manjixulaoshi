@@ -332,6 +332,7 @@ const state = {
   audioChunks: [],
   recordingUrl: "",
   transcript: "",
+  interimTranscript: "",
 };
 
 const elements = {
@@ -377,6 +378,8 @@ const elements = {
   statusLine: document.querySelector("#statusLine"),
   recordingPlayback: document.querySelector("#recordingPlayback"),
   transcriptText: document.querySelector("#transcriptText"),
+  manualTranscriptInput: document.querySelector("#manualTranscriptInput"),
+  applyTranscriptBtn: document.querySelector("#applyTranscriptBtn"),
   translationText: document.querySelector("#translationText"),
   feedbackList: document.querySelector("#feedbackList"),
   prevBtn: document.querySelector("#prevBtn"),
@@ -466,6 +469,18 @@ function speak(text) {
 function setStatus(message, isWarning = false) {
   elements.statusLine.textContent = message;
   elements.statusLine.classList.toggle("warning", isWarning);
+}
+
+function setTranscript(text, options = {}) {
+  const value = text || "";
+  elements.transcriptText.textContent = value || "等待录音...";
+  if (options.updateInput !== false) {
+    elements.manualTranscriptInput.value = value;
+  }
+}
+
+function currentSpokenText() {
+  return (state.transcript || state.interimTranscript || elements.manualTranscriptInput.value || "").trim();
 }
 
 function readLearningProfile() {
@@ -923,10 +938,12 @@ function resetRecordingState() {
   state.audioChunks = [];
   state.recordingUrl = "";
   state.transcript = "";
+  state.interimTranscript = "";
   elements.recordToggleBtn.classList.remove("is-recording");
   elements.recordToggleBtn.setAttribute("aria-label", "开始录音");
   elements.recordingPlayback.hidden = true;
   elements.recordingPlayback.removeAttribute("src");
+  setTranscript("");
   setStatus("按下圆形按钮，说出上面的完整句子。");
 }
 
@@ -938,7 +955,8 @@ function buildRecognition() {
   const recognition = new SpeechRecognition();
   recognition.lang = "en-US";
   recognition.interimResults = true;
-  recognition.continuous = true;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
 
   recognition.addEventListener("result", (event) => {
     let finalText = "";
@@ -953,12 +971,24 @@ function buildRecognition() {
       }
     }
 
-    state.transcript = `${state.transcript} ${finalText}`.trim();
-    elements.transcriptText.textContent = state.transcript || interimText || "正在听...";
+    if (finalText) {
+      state.transcript = `${state.transcript} ${finalText}`.trim();
+      state.interimTranscript = "";
+    } else {
+      state.interimTranscript = interimText.trim();
+    }
+
+    setTranscript(currentSpokenText() || "正在听...", { updateInput: Boolean(currentSpokenText()) });
   });
 
-  recognition.addEventListener("error", () => {
-    setStatus("语音识别暂时不可用，但录音仍可回放。建议使用 Chrome 或 Edge。", true);
+  recognition.addEventListener("error", (event) => {
+    const messages = {
+      "not-allowed": "浏览器没有允许语音识别。请检查麦克风和语音识别权限。",
+      "no-speech": "没有听到清晰语音。可以靠近麦克风，或录完后手动修改识别文本。",
+      network: "语音识别服务连接失败。录音仍可回放，也可以手动输入你说的句子。",
+      "audio-capture": "没有检测到可用麦克风。请检查输入设备。",
+    };
+    setStatus(messages[event.error] || "语音识别暂时不可用，但录音仍可回放。建议使用 Chrome 或 Edge。", true);
   });
 
   return recognition;
@@ -975,7 +1005,8 @@ async function startRecording() {
     state.isRecording = true;
     state.audioChunks = [];
     state.transcript = "";
-    elements.transcriptText.textContent = "正在听...";
+    state.interimTranscript = "";
+    setTranscript("正在听...", { updateInput: false });
     elements.translationText.textContent = "录完后显示。";
     renderFeedback(["正在录音。说完整句子后，再按一次圆形按钮停止。"]);
 
@@ -995,7 +1026,11 @@ async function startRecording() {
     });
 
     state.recognition = buildRecognition();
-    state.recognition?.start();
+    try {
+      state.recognition?.start();
+    } catch (error) {
+      setStatus("录音已开始，但语音转文字没有启动。可以录完后手动输入句子生成反馈。", true);
+    }
     state.mediaRecorder.start();
 
     elements.recordToggleBtn.classList.add("is-recording");
@@ -1013,6 +1048,7 @@ function stopRecording() {
   }
 
   state.isRecording = false;
+  state.transcript = currentSpokenText();
   elements.recordToggleBtn.classList.remove("is-recording");
   elements.recordToggleBtn.setAttribute("aria-label", "开始录音");
   setStatus("正在生成反馈...");
@@ -1032,6 +1068,7 @@ function stopRecording() {
 
 function analyzeAnswer() {
   const expected = targetSentence();
+  state.transcript = currentSpokenText();
   const expectedWords = words(expected);
   const spokenWords = words(state.transcript);
   const expectedSet = new Set(expectedWords);
@@ -1041,6 +1078,7 @@ function analyzeAnswer() {
   const exact = normalize(expected) === normalize(state.transcript);
   const drill = currentDrill();
 
+  setTranscript(state.transcript || "");
   elements.transcriptText.textContent = state.transcript || "没有识别到清晰内容。";
   elements.translationText.textContent = state.transcript
     ? drill.translation
@@ -1095,6 +1133,12 @@ function analyzeAnswer() {
   setStatus("已生成反馈，可以回放录音对照。");
 }
 
+function applyManualTranscript() {
+  state.transcript = elements.manualTranscriptInput.value.trim();
+  state.interimTranscript = "";
+  analyzeAnswer();
+}
+
 function bindEvents() {
   elements.onboardingBackBtn.addEventListener("click", previousOnboardingStep);
   elements.onboardingContinueBtn.addEventListener("click", nextOnboardingStep);
@@ -1111,6 +1155,7 @@ function bindEvents() {
   elements.apiProviderSelect.addEventListener("change", applyProviderPreset);
   elements.saveApiSettingsBtn.addEventListener("click", saveApiSettings);
   elements.clearApiSettingsBtn.addEventListener("click", clearApiSettings);
+  elements.applyTranscriptBtn.addEventListener("click", applyManualTranscript);
 
   elements.scenarioSelect.addEventListener("change", (event) => {
     state.lessonIndex = Number(event.target.value);
