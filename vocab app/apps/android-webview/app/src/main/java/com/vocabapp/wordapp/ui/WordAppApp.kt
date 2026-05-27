@@ -183,7 +183,7 @@ private fun ProgressCard(newText: String, reviewText: String, progress: Float) {
                 Text(reviewText, color = Muted, style = MaterialTheme.typography.titleMedium)
             }
             LinearProgressIndicator(
-                progress = { progress },
+                progress = progress,
                 modifier = Modifier.fillMaxWidth().height(10.dp),
                 color = Green,
                 trackColor = Color(0xFFE0E0E0)
